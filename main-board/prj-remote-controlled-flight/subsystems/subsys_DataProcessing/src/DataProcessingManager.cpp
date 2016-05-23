@@ -14,6 +14,8 @@
  */
 
 #include "DataProcessingManager.h"
+#include "ContinuousControlManager.h"
+#include "CommLowLevelManager.h"
 
 //Internal
 #include "debug.h"
@@ -24,6 +26,12 @@
 #include <chrono>
 
 using namespace std;
+
+DataProcessingManager::DataProcessingManager()
+{
+	commLowLevelManager = new CommLowLevelManager();
+	continuousControlManager = new ContinuousControlManager();
+}
 
 DataProcessingManager::DataProcessingManager(std::string name) :
     //interface(new DataProcessingInterface("DataProcessing:Interface")),

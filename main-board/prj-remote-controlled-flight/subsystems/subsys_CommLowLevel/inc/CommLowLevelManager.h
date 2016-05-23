@@ -23,13 +23,14 @@
 #include "AbstractModuleManager.h"
 
 //Interface
-//#include "CommLowLevelInterface.h"
-#include "ContinuousControlManager.h"
+#include "CommLowLevelInterface.h"
 
 //Modulos (nao precisa, mas pode incluir todos os headers dos submodulos)
 //#include "uart.h"
 #include "proVantProtocol.h"
 #include <fstream>
+
+class ContinuousControlManager;
 
 /*! \brief Gerenciador padrão para módulos.
  *
@@ -37,6 +38,7 @@
 class CommLowLevelManager : public AbstractModuleManager
 {
 public:
+	CommLowLevelManager();
     CommLowLevelManager(std::string name);
     ~CommLowLevelManager();
 

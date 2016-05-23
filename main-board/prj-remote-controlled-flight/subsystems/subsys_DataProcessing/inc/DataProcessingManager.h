@@ -24,12 +24,13 @@
 
 //Interface
 #include "DataProcessingInterface.h"
-#include "ContinuousControlManager.h"
-#include "CommLowLevelManager.h"
 
 //Modulos (nao precisa, mas pode incluir todos os headers dos submodulos)
 #include "proVantProtocol.h"
 #include "provant_const.h"
+
+class CommLowLevelManager;
+class ContinuousControlManager;
 
 /*! \brief Gerenciador padrão para módulos.
  *
@@ -37,6 +38,7 @@
 class DataProcessingManager : public AbstractModuleManager
 {
 public:
+	DataProcessingManager();
     DataProcessingManager(std::string name);
     ~DataProcessingManager();
 

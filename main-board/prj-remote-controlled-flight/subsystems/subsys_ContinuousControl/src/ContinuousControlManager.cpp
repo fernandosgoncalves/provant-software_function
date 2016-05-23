@@ -14,6 +14,7 @@
  */
 
 #include "ContinuousControlManager.h"
+#include "CommLowLevelManager.h"
 #include "proVantTypes.h"
 
 //Internal
@@ -26,6 +27,11 @@
 using namespace Eigen;
 using namespace loadmodel;
 using namespace std;
+
+ContinuousControlManager::ContinuousControlManager()
+{
+	commLowLevelManager = new CommLowLevelManager();
+}
 
 ContinuousControlManager::ContinuousControlManager(std::string name) :
     //interface(new ContinuousControlInterface("ContinuousControl:Interface")),

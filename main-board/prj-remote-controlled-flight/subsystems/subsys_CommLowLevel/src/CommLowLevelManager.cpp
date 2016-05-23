@@ -13,6 +13,7 @@
  *
  */
 
+#include "ContinuousControlManager.h"
 #include "CommLowLevelManager.h"
 #include "proVantTypes.h"
 
@@ -25,6 +26,11 @@
 #include <chrono>
 
 using namespace std;
+
+CommLowLevelManager::CommLowLevelManager()
+{
+	continuousControlManager = new ContinuousControlManager();
+}
 
 CommLowLevelManager::CommLowLevelManager(std::string name) :
     //interface(new CommLowLevelInterface("CommLowLevel:Interface")),

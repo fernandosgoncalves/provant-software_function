@@ -30,12 +30,12 @@
 
 //Interface
 #include "ContinuousControlInterface.h"
-#include "CommLowLevelManager.h"
 
 #include "MpcControler.h"
 #include "MpcBirotor.h"
 #include "MpcLoad.h"
 
+class CommLowLevelManager;
 //Modulos (nao precisa, mas pode incluir todos os headers dos submodulos)
 
 /*! \brief Gerenciador padrão para módulos.
@@ -44,6 +44,7 @@
 class ContinuousControlManager : public AbstractModuleManager
 {
 public:
+	ContinuousControlManager();
     ContinuousControlManager(std::string name);
     ~ContinuousControlManager();
 

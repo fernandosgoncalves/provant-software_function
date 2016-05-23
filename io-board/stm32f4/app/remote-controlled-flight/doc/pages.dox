@@ -1,0 +1,238 @@
+/*! \mainpage Página principal
+
+\image html provant_small.png "proVANT - Remote Controlled Flight v0.3" width=6cm 
+
+\section page_main_sec_overview Overview
+
+Este é a documentacão do projeto de software <b>Remote Controlled Flight</b> do \b proVANT.
+O objetivo deste projeto de software é gerar um firmware para a \em io-board do VANT que permita operá-lo com um controle remoto convencional de
+aeromodelismo. Para tal, são necessárias/previstas o seguinte conjunto de finalidades:
+
++ Comunicação com controle remoto convecional de modelismo, com leitura de 6 ou mais canais via interface PPM.
++ Funcionalidade completa dos ESCs e Servo-motores do VANT.
++ Leitura e tratamento simplificado de dados de uma IMU (a ser escolhida).
++ Algoritmo de controle garantindo estabilidade rotacional para o VANT durante o vôo. 
+
+\section page_main_sec_changelog Changelog
+
+<>Changelog da versão 0.3  [Apr-2013] :</b> 
++ ...
++ ...
+
+
+<b>Changelog da versão 0.2 [Fev-2014 > Mar-2014] :</b> 
++ Resolvidas as pendências da versão 0.1. 
++ Implementada a troca de mensagens entre módulos (em threadas).
++ Atuação: Implementado os drivers para o servo RX24f e o ESC da Mikrokopter
++ Sensoriamento: 
+
+<b>Status da versão 0.1 [Nov-2013 > Jan-2014] :</b> 
++ Implementado o esqueleto básico da estrutura do projeto (sistema de <b>modules</b> com um <i>main</i> e um <i>common</i>)
++ Adotada uma convenção de nomenclatura, descrita em \ref page_naming )
++ Implementadas as funções básicas para:
+	- USART (2 e 6; 3 ainda pendente) com tratador de interrupção e buffer circular.
+	- I2C (I2C1)
+	- GPIO (wrappers) e EXTI (interrupts externos)
++ Implementados módulos para:
+	- Receiver (usando TIM1 e EXTI)
+	- Servo RX24F, portando a biblioteca preexistente do Arduino.
+	- I2C (exemplo com IMU simples baseada nos CIs ITG3205 e ADXL345)
++ Integração com FreeRTOS.
++ Integração e teste com <a href="http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_Trace/FreeRTOS_Plus_Trace.shtml">FreeRTOS+Trace</a> e Tracealyzer, 
+ver \ref page_freertosplustrace .
+	
+<b>Pendências da versão 0.1:</b>
++ Atualizar a documentação (decritivo da estrutura de projeto, em \ref page_naming )
++ Implementar troca de mensagens entre threads. 
+
+Para pendências internas no código, ver lista de tarefas auto-gerada (\ref todo	).
+
+*/
+
+
+
+
+
+
+/*! \page page_naming Organização, nomenclaturas e code-style
+
+\section page_naming_sec_codeorganization Organização deste projeto
+
+Este projeto tenta seguir os princípios de organização apresentados em 
+<em> <a href="http://www.amazon.com/Large-Scale-Software-Design-John-Lakos/dp/0201633620">Large-Scale C++ Software Design</a></em>, de John Lakos. 
+Para tal, tentou-se implementar uma estrutura hierárquica verticalizada dos elementos de um nível em relação aos de um nível superior. Para a descrição deste projeto, 
+faz-se necessário apresentar convenções de nomenclatura usadas pelo autor, adaptadas ao contexto desta aplicação. São elas:
+
+<center>
+Nomenclatura  | Uso em contexto 
+------------- | -------------
+Arquivo       | Unidade atômica do projeto; conjuntos de dados com extensões (<em>.c, .cpp, .h, etc </em>), ou binários sem extensão. 
+Componente    | Par de arquivos; <em> header + source file </em> respectivos. Exemplo, `c_io_imu.c` e `c_io_imu.h`. Pode ser referido como \b submódulo. 
+Módulo        | Conjunto de componentes implementando alguma unidade funcional. Exemplo, a coleção de arquivos em <em> modules/io </em>, que implementa as funções de E/S do VANT.
+Subsistema	  | Conjunto de módulo + documentação do módulo + unidades de teste do módulo. 
+Sistema       | Conjunto de subsistemas + documentação + aplicação que implementam a funcionalidade total do VANT. 
+</center> 
+
+Neste projeto, a \b aplicação - o  binário a ser efetivamente executado pelo VANT -, se encontra a nível de \b sistema. O uso de documentação independente para os \b subsistemas não é 
+necessária no escopo deste projeto, e portanto, toda a documentação dos \b módulos é gerada <em>juntamente com esta documentação</em> de \b sistema. Durante o uso deste documento, quando estes 
+termos aparecerem com os significados da tabela acima, eles serão marcados em \b negrito. 
+
+Seguindo um conceito de verticalização, os elementos do projeto estão organizados como no diagrama abaixo:
+
+\image html provant_software_layers_diagram.png "Overview da organização de software do projeto de software \em Remote \em Controlled \em Flight." width=6cm
+
+Identificam-se três níveis principais e seus elementos, do topo à base: 
+
+- <b> Application level </b>
+	+ \em Modules: Módulos, implementando as funções de interesse do VANT (estabilização, navegação, comunicação com \em main-board, etc). O binário da \b aplicação é compilado diretamente 
+	acima deste nível.
+- <b> Middleware level </b>
+	+ \em Libs: Bibliotecas próprias ou de terceiros. Funções utilitárias próprias do projeto (a exemplo dos componente `c_common_utils.h` e `c_common_utils.c`) 
+	além de bibliotecas como o Tracealyzer estão neste nível.
+	+ \em HAL: Hardware Abstraction Layer.  
+	+ \em State-Machine:
+	+ \em Free-RTOS: 
+- <b> Core level </b>
+	+ \em CMSIS \em Core:
+	+ \em CMSIS \em Vendor:				
+
+É importante lembrar que um elemento em um nível pode depender direta ou indiretamente de todos os elementos abaixo dele, sem que os princípios de 
+modularidade ou hierarquia vertical sejam violados. No entanto, relações diretas - de um elemento apenas com aqueles diretamente abaixo dele - são recomendadas.
+
+\subsection page_naming_subsec_foldertree Estrutura de pastas
+
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis adnum,
+
+\section page_naming_sec_naming Nomenclatura
+
+\subsection page_naming_subsec_filenaming Arquivos e módulos
+
+Todos os componentes são nomeados seguindo o padrão:
+
+\code{.c} 
+	c_<nome_do_modulo>_<nomeDoComponente>.c
+	c_<nome_do_modulo>_<nomeDoComponente>.h 
+\endcode
+
+Componentes nomeados desta maneira não devem ser incluídos por arquivos fora do módulo respectivo (como se fossem funcões \b private).
+Componentes públicos de cada módulo (que serão efetivamente incluídos por outros módulos, ou pela \em main) são nomeados com a sigla \em "pv" 
+(como em \b proVANT) no início:
+
+\code{.c} 
+	pv_interface_<nomeDoModulo>.{h,c}
+	pv_module_<nomeDoModulo>.{h,c} 
+\endcode 
+
+É desejado que o módulo tenha um nome compacto - de preferência uma única palavra ou sigla (ex.: \b rc, \b io, \b common) - totalmente minúsculo 
+(ou dividida com letras maísculas e minúsculas; \em "nomeDoModulo"). Acentos e caracteres especiais não devem ser usados. 
+
+Todos os arquivos do projeto devem incluir uma descrição formatada do Doxygen no topo, com nome, data de criação do arquivo e breve descrição,
+como segue - exemplo do arquivo \em c_rc_receiver.c :
+
+\code{.c}
+/**
+  /******************************************************************************
+  * @file    modules/rc/c_rc_receiver.c
+  * @author  Martin Vincent Bloedorn
+  * @version V1.0.0
+  * @date    30-November-2013
+  * @brief   Implementação do receiver do controle de rádio manual.
+  * 		 Implementa as funções de recebimento, detecção e interpretação do
+  * 		 receiver configurado em modo PPM.
+  /******************************************************************************/
+  
+\endcode 
+
+A tag \b \@date deve conter a data de criação/inserção do arquivo e não será alterada depois disso. A tag \b \@version é opcional é serve mais para controle local 
+próprio desenvolvedor. 
+
+De maneira equivalente, as funções devem ser adicionadas ao grupo de documentação correto do Doxygen via a tag \b \@addtogroup.
+Isto deve ser feito \b apenas no \em .c, garantindo que todas as funções implementadas apareçam na documentação. 
+Primeramente, as funções devem ser adicionadas ao componente ao qual elas pertencem. A descrição do grupo fica na sua definição de mais alto nível,
+ou seja, a definição do componente fica no próprio \em .c do componente, enquanto que a definição do módulo fica no \em .c do módulo (\b pv_module_{...\b}.h).
+Em seguida, elas são adicionadas ao módulo equivalente. Novamente, o exemplo abaixo é do arquivo \em c_rc_receiver.c :
+
+\code{.c}
+/*! @addtogroup Module_RC
+  * @{
+  */
+  
+/** @addtogroup Module_RC_Component_Receiver
+ *
+ * 	Módulo do receiver.
+  * @{
+  */
+\endcode
+
+Analogamente, o arquivo \em pv_module_rc.c é então adicionado à listagem de módulos do ProVANT, e  possui então a descrição do grupo \b Module_RC.  
+
+\code{.c}
+/** @addtogroup ProVANT_Modules
+  * @{
+  */
+
+/** @addtogroup Module_RC
+  * Definição do módulo de controle e comunicação via rádio manual.
+  * @{
+  */
+\endcode
+
+Isto garante que o diagrama da estrutura de projeto gerada pelo Doxygen corresponde à hierarquia planejada. Os exemplos acima geram um diagrama na documentação como
+o mostrado abaixo:
+
+\image html diagram_example.png "Exemplo de diagrama criado com o código acima".   
+
+\subsection page_naming_subsec_codenaming Funções, variáveis, etc.
+
+\b Variáveis: critério não estrito, mas recomenda-se o uso do padrão Java - com separações apenas com letras maiúsculas e minúsculas.
+
+\code{.c} 
+	int someVariable; 
+\endcode
+
+\b Funções: seguindo o apresentado acima, devem ser separadas com \em underlines, seguinto o sistema de nomeclatura proposto. 
+
+\code{.c} 
+	c_common_gpio_init(GPIOC, GPIO_Pin_13, GPIO_Mode_OUT); 
+\endcode
+Para funções privadas de componentes específicos, usa-se nomes compactos mas não crípticos, também divididos com \em underlines se necessário for.
+\code{.c} 
+long map(long x, long in_min, long in_max, long out_min, long out_max) {
+	return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+} 
+\endcode
+
+Por fim, a utilização de pinos da MCU deve ser definida no arquivo `pv_pinmapping.h`, seguindo as regras de nomenclatura definidas em \link PV_PinMapping PinMapping \endlink .
+
+\section page_naming_sec_doxygen Doxygen
+ 
+ 
+*/
+
+
+
+
+
+/*! \page page_freertosplustrace Usando o FreeRTOS + Trace 
+
+O <a href="http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_Trace/FreeRTOS_Plus_Trace.shtml">FreeRTOS+Trace</a> é uma biblioteca que pode ser integrada com o FreeRTOS e
+que permite armazenamento de dados sobre o comportamento do programa em tempo de execução: chamadas de funções, carregamento de processador, interrupções e etc. Estas ficam
+armazenadas na memória RAM e são lidas via dump de memória (o que é feito automaticamente para o J-Link). 
+
+\section page_freertosplustrace_section_jlink Usando o J-Link
+
+Após instalada, a aplicação <b>FreeRTOS+Trace</b> (a.k.a. Traecealyzer) pode ser executada em modo <i>Demo</i> ou <i>Free Version</i>. 
+As duas opções possuem funcionalidades suficientes para a aplicação no projeto. Para ler os dados gravados, <b>J-Link > Read trace</b>. 
+A região de memoria a ser lida deve englobar completamente os dados do Trace. Para tal, em modo de debug, verifica-se em que endereço de memória está a variável 
+<i>RecoderDataPtr</i>. A região setada nas configurações do Tracealyzer deve iniciar neste (ou até mesmo antes deste) endereço, e ter no mínimo o tamanho previsto
+nas configuracões do Trace (EVENT_BUFFER_SIZE em trcConfig.h). No exemplo, foi usado o dobro (o configurado era 4000).
+
+\image html tracealyzer_memory_region.png "Região de memoria a ser explorada e lida pelo Tracealyzer." width=6cm  
+
+\image html tracealyzer2.png "Visão de trace." width=6cm   
+
+\section page_freertosplustrace_section_ft2232 Usando outro JTAG com FT2232
+
+Ainda não testado.
+
+*/

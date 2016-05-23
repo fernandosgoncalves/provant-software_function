@@ -1,0 +1,193 @@
+Preparing the beaglebone black
+
+- Flashing a Debian jessie image in the beaglebone black
+	First download the image from: http://elinux.org/Beagleboard:BeagleBoneBlack_Debian#Flashing_eMMC
+		for this tutorial will be: Jessie Snapshot console, Flasher: (console) (BeagleBone Black/Green eMMC)
+		https://rcn-ee.com/rootfs/bb.org/testing/2015-09-20/console/BBB-eMMC-flasher-debian-8.2-console-armhf-2015-09-20-2gb.img.xz
+
+- Preparing the SDcard for flashing the image
+	-Format the SDcard with fat32.
+	-then unmount the SDcard and find the device for the SDcard in the \dev directory -> in ubuntu could be \dev\mmcblkX
+	-Extract the image from the xz archive:
+		unxz BBB-eMMC-flasher-debian-8.2-console-armhf-2015-09-20-2gb.img.xz
+	-Write the image in the SDcard with this terminal command:
+		sudo dd if=./BBB-eMMC-flasher-debian-8.2-console-armhf-2015-09-20-2gb.img of=/dev/mmcblkX
+	-Synchronize all:
+		sudo sync
+- Flash the SDcard image
+	-with the beaglebone disconected, insert the card in the beaglebone black and press the boot button(next to the usb connector) and connect   	      the beaglebone back (could be with usb cable or a external power-5V:2A). Wait a few seconds and stop pressing the button and wait for the  
+         status led stop to blink and disconect the beaglebone.
+
+
+
+Preparing the SDcard for the beagle bone
+
+	-With gparted or any program for disk partition, create two partition, First partition named boot with 1Gb and the other one named data with 		 ext4 with the rest of the disk.
+	-In the boot partition copy the archive uEnv.txt, this one is in provant-software/main-board/Readme
+
+Installing a different kernel in the beaglebone black:
+-For kerne 3.8.X -> this kernel have full cape manager in the same waye that was use in the project
+	sudo apt-get update
+	sudo apt-cache search linux-image | grep 3.8.13-bone
+	sudo apt-get install linux-image-3.8.13-boneX
+	sudo reboot
+-For kerne 3.X+ to 4.0 -> this kernel have cape manager with other implementation see Realy Simple Cape Manager for beaglebone black
+
+-For kernel 4.1.+ -> it's posible implements the full cape manager of the kerner 3.8.X:
+	- install the device tree compiler: sudo apt-get install device-tree-compiler
+	- see http://www.thing-printer.com/cape-manager-is-back-baby/
+*Actualy the code of beaglebone was tested in a kernel 3.8.13
+
+
+Compiling the UART drivers for USART1 and USART 2
+	---Doing this for kernel 3.8.13:-------
+	- In the beaglebone black first install de device tree compiler
+		sudo apt-get update	
+		sudo apt-get install device-tree-compiler
+	---------------------------------------
+	- Copy the dts archives that is in provant-software/main-board/Readme/dts to the beaglebone black,
+		BB-UART1-00A0.dts
+		BB-UART2-00A0.dts
+	- In the beaglebone black compile the dts files with the comands:
+		dtc -O dtb -o BB-UART1-00A0.dtbo -b 0 -@ BB-UART1-00A0.dts
+		dtc -O dtb -o BB-UART2-00A0.dtbo -b 0 -@ BB-UART2-00A0.dts
+	- Copy the firmwares:
+		cp BB-UART1-00A0.dtbo /lib/firmware/
+		cp BB-UART2-00A0.dtbo /lib/firmware/
+	---Doing this for kernel 3.8.13:-------
+	- Load the new drivers into the cape manager
+		echo BB-UART1 > /sys/devices/bone_capemgr.*/slots
+		echo BB-UART2 > /sys/devices/bone_capemgr.*/slots
+	---------------------------------------
+	---Doing this for kernel 4.1.x+:--------
+	- Load the new drivers into the cape manager
+		echo BB-UART1 > /sys/devices/platform/bone_capemgr/slots
+		echo BB-UART2 > /sys/devices/platform/bone_capemgr/slots
+	---------------------------------------
+
+Load the new drivers in the boot:
+	- Create the script that will be load in the boot:
+		nano /usr/local/bin/provant
+		#!/bin/sh
+		echo BB-UART1 > /sys/devices/bone_capemgr.*/slots
+		echo BB-UART2 > /sys/devices/bone_capemgr.*/slots
+
+	- Create the sript for the service:
+		nano /lib/systemd/provant.service
+		[Unit]
+		Description=Provant Script
+		After=syslog.target network.target
+
+		[Service]
+		Type=simple
+		ExecStart=/usr/local/bin/provant
+
+		[Install]
+		WantedBy=multi-user.target
+
+	- Creat the link of the service:
+		cd /etc/systemd/system/
+ 		ln /lib/systemd/enable_uart1.service enable_uart1.service
+	
+	- Load the service:
+		systemctl daemon-reload
+		systemctl start provant.service 
+		systemctl enable provant.service
+
+
+Reboot the beeaglebone and insert the SDcard.
+
+Compiling the boost library in ubuntu.
+
+	- Installing the compiler for arm: sudo apt-get install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf gcc-arm-linux-gnueabi 						  g++-arm-linux-gnueabi
+	- Download the source of boost library(for this tutorial will be boost_1.59.0 http://www.boost.org/users/history/version_1_59_0.html):
+		http://www.boost.org/
+		extract the file in the directori $HOME/boost/
+	- Create the configuration file for cross compile:
+		copy the archive from: $HOME/boost/boost_x_xx_x/tools/build/example/user-config.jam to $HOME
+	- Replace the all file with the following line:
+		using gcc : arm : arm-linux-gnueabihf-g++ ;
+	- Then create the folder for the library: 
+		cd $HOME/boost/
+		mkdir boost_lib
+	- Go to the boost build directory
+		cd boost_x_xx_x
+	- Set the directory for the library
+		./bootstrap.sh --prefix=$HOME/boost/boost_lib
+	- Compile the library
+		./b2 toolset=gcc-arm cflags="-std=c++11 -march=armv7-a -mtune=cortex-a8 -mfloat-abi=hard -mfpu=neon -ffast-math -O3"
+	- Install the library 
+		./b2 install
+	
+	-Now the library is ready for use in the directory  $HOME/boost/boost_lib
+
+Compiling the opencv for the beaglebone black 
+ *For this example was necessary install the latest version of cmake, in ubuntu by default is cmake 2.8 and was installed cmake 3.2
+	- In vertion 2.4.9 was necessary change the following lines in the file arm-gnueabi.toolchain.cmake in <opencv directory>/platform/linux/: 
+		set(CMAKE_C_COMPILER    arm-linux-gnueabi${FLOAT_ABI_SUFFIX}-gcc-${GCC_COMPILER_VERSION})
+		set(CMAKE_CXX_COMPILER  arm-linux-gnueabi${FLOAT_ABI_SUFFIX}-g++-${GCC_COMPILER_VERSION})
+		with:	
+		find_program(CMAKE_C_COMPILER NAMES arm-linux-gnueabi${FLOAT_ABI_SUFFIX}-gcc-${GCC_COMPILER_VERSION})
+		find_program(CMAKE_CXX_COMPILER NAMES arm-linux-gnueabi${FLOAT_ABI_SUFFIX}-g++-${GCC_COMPILER_VERSION})
+
+	- For all version add the following cflags -march=armv7-a -mfloat-abi=hard in the following lines(the mark ^ is where the flags are added):
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mthumb -fdata-sections -Wa,--noexecstack -fsigned-char -Wno-psabi ^")
+		set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -mthumb -fdata-sections -Wa,--noexecstack -fsigned-char -Wno-psabi ^")
+	
+	- In the file CMakelists.txt in the opencv directory add "OR ARM" in the line:
+		OCV_OPTION(ENABLE_FAST_MATH  "Enable -ffast-math (not recommended for GCC 4.6.x)"  OFF  IF (CMAKE_COMPILER_IS_GNUCXX AND (X86 OR  
+                X86_64)) )
+	  like this:
+	        OCV_OPTION(ENABLE_FAST_MATH "Enable -ffast-math (not recommended for GCC 4.6.x)" OFF  IF (CMAKE_COMPILER_IS_GNUCXX AND (X86 OR 
+                X86_64 OR ARM)))
+	- create the archive: mkdir -p <opencv directory>/platform/linux/build_hardfp
+	- go to this directory: cd <opencv directory>/platform/linux/build_hardfp
+	- cmake -DENABLE_NEON=ON -DENABLE_FAST_MATH=ON -DCMAKE_TOOLCHAIN_FILE=../arm-gnueabi.toolchain.cmake ../../..
+	- make install
+	- copy the folder in <opencv directory>/platform/linux/build_hardfp/install/lib/pkgconfig to /usr/local/lib
+	- then run:  PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib/pkgconfig
+	             export PKG_CONFIG_PATH
+
+
+Setting the directory for the libraries used in the project in the beaglebone black:
+	- Create the directory where the libraries will be copied: for this example /root/MPC/lib
+	- Create the config archive:	nano /etc/ld.so.conf.d/provant.conf
+	- Put the following lines in the file:		
+		#Provant libraries
+		/root/MPC/lib/opencv
+		/root/MPC/lib/boost
+		/root/MPC/lib/qpoases
+	- Reload the list of system-wide library paths: ldconfig
+	- Check if the directory was added:: ldconfig -v
+
+Copy the libraries coompiling for the boost :
+	- $HOME/boost/boost_lib to /root/MPC/lib
+Copy the libraries for the MPC:	
+	- provant-software/main-board/prj-remote-controlled-flight/subsystems/common/qpOases/bin/ to /root/MPC/lib
+
+Compiling the program for the beaglebone black:
+	- Go to the directory : provant-software/main-board/prj-remote-controlled-flight/build/
+	- then run:
+		cmake ..
+		make -j4
+
+
+
+Copy the program to the beaglebone black:
+	 - provant-software/main-board/prj-remote-controlled-flight/build/provant_main_v1 to /root/MPC/
+
+* It is posible compiling and copy the program with the script big.sh
+	- In the ubuntu terminal run: ssh-keygen
+	- After, give enter until the end
+	- Then copy the ssh-key genereted to the beaglebone black: ssh-copy-id root@192.168.0.5 -> in this case the ip of the beaglebone is   
+          192.168.0.5
+	- Now change the ip in the script big.sh to the ip of the beaglebone black and run
+
+ 
+
+utilidades de usb en la beaglebone black
+sudo apt-get install usbutils
+sudo apt-get install v4l-utils
+
+
+	

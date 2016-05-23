@@ -1,0 +1,16 @@
+mcroot=/dev/mmcblk0p2 ro
+mmcrootfstype=ext4 rootwait fixrtc
+
+##To disable HDMI/eMMC...
+#optargs=capemgr.disable_partno=BB-BONELT-HDMI,BB-BONELT-HDMIN,BB-BONE-EMMC-2G
+
+##3.1MP Camera Cape
+#optargs=capemgr.disable_partno=BB-BONE-EMMC-2G
+
+#Desactiva o HDMI para ativar o SPI
+cape_disable=capemgr.disable_partno=BB-BONELT-HDMI,BB-BONELT-HDMIN
+#cape_enable=capemgr.enable_partno=BB-SPI1-01
+#cape_enable=capemgr.enable_partno=BB-SPI0-01
+cape_enable=capemgr.enable_partno=BB-UART1
+cape_enable=capemgr.enable_partno=BB-UART2
+

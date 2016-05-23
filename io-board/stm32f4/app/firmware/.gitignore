@@ -1,0 +1,13 @@
+# gitignore file for the firmware
+
+# ignore object files
+*.[oa]
+
+# ignore temporary files from text editors 
+*~
+
+# ignore built contents
+bin/
+
+# ignore generated html documentation
+doc/html

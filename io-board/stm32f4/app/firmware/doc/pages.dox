@@ -1,0 +1,156 @@
+/*! \mainpage Página principal
+
+\image html provant_small.png "proVANT - Birotor v0.1" width=6cm 
+
+<b>Status da versão 0.1:</b> 
++ Implementado o esqueleto básico da estrutura do projeto (sistema de <b>modules</b> com um <i>main</i> e um <i>common</i>)
++ Adotada uma convenção de nomenclatura, descrita em \ref page_naming )
++ Implementadas as funções básicas para:
+	- USART (2 e 6; 3 ainda pendente) com tratador de interrupção e buffer circular.
+	- I2C (I2C1)
+	- GPIO (wrappers) e EXTI (interrupts externos)
++ Implementados módulos para:
+	- Receiver (usando TIM1 e EXTI)
+	- Servo RX24F, portando a biblioteca preexistente do Arduino.
+	- I2C (exemplo com IMU simples baseada nos CIs ITG3205 e ADXL345)
++ Integração com FreeRTOS.
++ Integração e teste com <a href="http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_Trace/FreeRTOS_Plus_Trace.shtml">FreeRTOS+Trace</a> e Tracealyzer, 
+ver \ref page_freertosplustrace .
+	
+<b>Pendências:</b>
++ Atualizar a documentação (decritivo da estrutura de projeto, em \ref page_naming )
++ Implementar troca de mensagens entre threads. 
+
+Para pendências internas no código, ver lista de tarefas auto-gerada (\ref todo	).
+
+*/
+
+
+
+
+
+
+/*! \page page_naming Nomenclaturas e code-style
+
+\section page_naming_sec_codeorganization Organização deste projeto
+
+Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. 
+Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. 
+Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero 
+eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. 
+Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer possim assum. 
+Typi non habent claritatem insitam; est usus legentis in iis qui facit eorum claritatem. Investigationes demonstraverunt lectores legere me 
+lius quod ii legunt saepius. Claritas est etiam processus dynamicus, qui sequitur mutationem consuetudium lectorum. Mirum est notare quam littera gothica, 
+quam nunc putamus parum claram, anteposuerit litterarum formas humanitatis per seacula quarta decima et quinta decima. 
+
+\section page_naming_sec_naming Nomenclatura
+
+\subsection page_naming_subsec_filenaming Arquivos e módulos
+
+Todos os componentes são nomeados seguindo o padrão:
+
+\code{.c} 
+	c_<nome_do_modulo>_<nome_do_componente>.c
+	c_<nome_do_modulo>_<nome_do_componente>.h 
+\endcode
+
+Componentes nomeados desta maneira não devem ser incluídos por arquivos fora do módulo respectivo (como se fossem funcões \b private).
+Componentes públicos de cada módulo (que serão efetivamente incluídos por outros módulos, ou pela \em main) são nomeados com a sigla \em "pv" 
+(como em \b proVANT) no início:
+
+\code{.c} 
+	pv_<nome_do_modulo>_interface.{h,c}
+	pv_module_<nome_do_modulo>.{h,c} 
+\endcode 
+
+Todos os arquivos do projeto devem incluir uma descrição formatada do Doxygen no topo, com nome, data de criação do arquivo e breve descrição,
+como segue - exemplo do arquivo \em c_rc_receiver.c :
+
+\code{.c}
+/**
+  /******************************************************************************
+  * @file    modules/rc/c_rc_receiver.c
+  * @author  Martin Vincent Bloedorn
+  * @version V1.0.0
+  * @date    30-November-2013
+  * @brief   Implementação do receiver do controle de rádio manual.
+  * 		 Implementa as funções de recebimento, detecção e interpretação do
+  * 		 receiver configurado em modo PPM.
+  /******************************************************************************/
+  
+\endcode 
+
+De maneira equivalente, as funções devem ser adicionadas ao grupo de documentação correto do Doxygen via a tag \b \@addtogroup.
+Isto deve ser feito \b apenas no \em .c, garantindo que todas as funções implementadas apareçam na documentação. 
+Primeramente, as funções devem ser adicionadas ao componente ao qual elas pertencem. A descrição do grupo fica na sua definição de mais alto nível,
+ou seja, a definição do componente fica no próprio \em .c do componente, enquanto que a definição do módulo fica no \em .c do módulo (\b pv_module_{...}.h).
+Em seguida, elas são adicionadas ao módulo equivalente. Novamente, o exemplo abaixo é do arquivo \em c_rc_receiver.c :
+
+\code{.c}
+/*! @addtogroup Module_RC
+  * @{
+  */
+  
+/** @addtogroup Module_RC_Component_Receiver
+ *
+ * 	Módulo do receiver.
+  * @{
+  */
+\endcode
+
+Analogamente, o arquivo \em pv_module_rc.c é então adicionado à listagem de módulos do ProVANT, e  possui então a descrição do grupo \b Module_RC.  
+
+\code{.c}
+/** @addtogroup ProVANT_Modules
+  * @{
+  */
+
+/** @addtogroup Module_RC
+  * Definição do módulo de controle e comunicação via rádio manual.
+  * @{
+  */
+\endcode
+
+Isto garante que o diagrama da estrutura de projeto gerada pelo Doxygen corresponde à hierarquia planejada. Os exemplos acima geram um diagrama na documentação como
+o mostrado abaixo:
+
+\image html diagram_example.png "Exemplo de diagrama criado com o código acima".   
+
+\subsection page_naming_subsec_codenaming Funções, variáveis, etc.
+
+\code{.c} 
+	c_common_gpio_init(GPIOC, GPIO_Pin_13, GPIO_Mode_OUT); 
+\endcode
+
+\section page_naming_sec_naming Doxygen
+ 
+*/
+
+
+
+
+
+
+/*! \page page_freertosplustrace Usando o FreeRTOS + Trace 
+
+O <a href="http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_Trace/FreeRTOS_Plus_Trace.shtml">FreeRTOS+Trace</a> é uma biblioteca que pode ser integrada com o FreeRTOS e
+que permite armazenamento de dados sobre o comportamento do programa em tempo de execução: chamadas de funções, carregamento de processador, interrupções e etc. Estas ficam
+armazenadas na memória RAM e são lidas via dump de memória (o que é feito automaticamente para o J-Link). 
+
+\section page_freertosplustrace_section_jlink Usando o J-Link
+
+Após instalada, a aplicação <b>FreeRTOS+Trace</b> (a.k.a. Traecealyzer) pode ser executada em modo <i>Demo</i> ou <i>Free Version</i>. 
+As duas opções possuem funcionalidades suficientes para a aplicação no projeto. Para ler os dados gravados, <b>J-Link > Read trace</b>. 
+A região de memoria a ser lida deve englobar completamente os dados do Trace. Para tal, em modo de debug, verifica-se em que endereço de memória está a variável 
+<i>RecoderDataPtr</i>. A região setada nas configurações do Tracealyzer deve iniciar neste (ou até mesmo antes deste) endereço, e ter no mínimo o tamanho previsto
+nas configuracões do Trace (EVENT_BUFFER_SIZE em trcConfig.h). No exemplo, foi usado o dobro (o configurado era 4000).
+
+\image html tracealyzer_memory_region.png "Região de memoria a ser explorada e lida pelo Tracealyzer." width=6cm  
+
+\image html tracealyzer2.png "Visão de trace." width=6cm   
+
+\section page_freertosplustrace_section_ft2232 Usando outro JTAG com FT2232
+
+Ainda não testado.
+
+*/

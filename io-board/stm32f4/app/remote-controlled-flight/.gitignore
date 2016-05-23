@@ -1,0 +1,17 @@
+# gitignore file for the remote-controlled-flight folder
+
+# ignore object files
+*.[oa]
+
+# ignore temporary files from text editors 
+*~
+
+# ignore built contents
+bin/
+
+# ignore generated html documentation
+doc/html
+
+# ignore project files from eclipse 
+.project
+.cproject

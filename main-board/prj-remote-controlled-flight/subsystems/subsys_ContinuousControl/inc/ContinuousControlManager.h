@@ -30,12 +30,10 @@
 
 //Interface
 #include "ContinuousControlInterface.h"
-
 #include "MpcControler.h"
 #include "MpcBirotor.h"
 #include "MpcLoad.h"
 
-class CommLowLevelManager;
 //Modulos (nao precisa, mas pode incluir todos os headers dos submodulos)
 
 /*! \brief Gerenciador padrão para módulos.
@@ -44,14 +42,11 @@ class CommLowLevelManager;
 class ContinuousControlManager : public AbstractModuleManager
 {
 public:
-	ContinuousControlManager();
     ContinuousControlManager(std::string name);
     ~ContinuousControlManager();
 
     // Interface do modulo
-    //ContinuousControlInterface * interface;
-
-    CommLowLevelManager * commLowLevelManager;
+    ContinuousControlInterface * interface;
 
     /*! \brief Implementação do ponto de entrada do modulo.
      *
@@ -60,8 +55,6 @@ public:
      */
     void Run();
 
-    void setActuation(proVant::controlOutput message);
-    proVant::controlOutput getActuation();
 private:
     /*! \brief Implementação da inicializacao de cada módulo.
      *
@@ -72,10 +65,6 @@ private:
     FILE * CONTCOM;
     char file[20];
 
-    boost::mutex q_mutex;
-
-    //Class Data
-    proVant::controlOutput cc_actuation;
 
     /***** Atributos e metodos especificos da topologia do modulo *****/
 

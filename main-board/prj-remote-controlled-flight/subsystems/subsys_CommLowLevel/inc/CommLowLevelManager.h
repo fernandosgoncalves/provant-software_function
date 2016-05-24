@@ -30,21 +30,17 @@
 #include "proVantProtocol.h"
 #include <fstream>
 
-class ContinuousControlManager;
-
 /*! \brief Gerenciador padrão para módulos.
  *
  */
 class CommLowLevelManager : public AbstractModuleManager
 {
 public:
-	CommLowLevelManager();
     CommLowLevelManager(std::string name);
     ~CommLowLevelManager();
 
     // Interface do modulo
-    //CommLowLevelInterface * interface;
-    ContinuousControlManager * continuousControlManager;
+    CommLowLevelInterface * interface;
 
     /*! \brief Implementação do ponto de entrada do modulo.
      *
@@ -53,18 +49,6 @@ public:
      */
     void Run();
 
-	void setRcNormalize(proVant::rcNormalize message);
-	void setServos(proVant::servos_state message);
-	void setPosition(proVant::position message);
-	void setAttitude(proVant::atitude message);
-	void setStatus(proVant::status message);
-	void setDebug(proVant::debug message);
-	proVant::rcNormalize getRcNormalize();
-	proVant::servos_state getServos();
-    proVant::position getPosition();
-    proVant::atitude getAttitude();
-    proVant::status get_status();
-	proVant::debug get_debug();
 private:
     /*! \brief Implementação da inicializacao de cada módulo.
      *
@@ -75,17 +59,7 @@ private:
     FILE * LOWLEVEL;
     char file[20];
 
-    boost::mutex q_mutex;
-
-    //Class Data
-    proVant::atitude cll_atitude;
-    proVant::position cll_position;
-    proVant::servos_state cll_servos;
-    proVant::debug cll_debug;
-    proVant::rcNormalize cll_rc;
-    proVant::status cll_status;
-
-    //    uart UART;
+//    uart UART;
 
     /***** Atributos e metodos especificos da topologia do modulo *****/
 

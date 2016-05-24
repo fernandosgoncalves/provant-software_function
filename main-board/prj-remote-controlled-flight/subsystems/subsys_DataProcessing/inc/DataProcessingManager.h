@@ -29,23 +29,17 @@
 #include "proVantProtocol.h"
 #include "provant_const.h"
 
-class CommLowLevelManager;
-class ContinuousControlManager;
-
 /*! \brief Gerenciador padrão para módulos.
  *
  */
 class DataProcessingManager : public AbstractModuleManager
 {
 public:
-	DataProcessingManager();
     DataProcessingManager(std::string name);
     ~DataProcessingManager();
 
     // Interface do modulo
-    //DataProcessingInterface * interface;
-    CommLowLevelManager * commLowLevelManager;
-    ContinuousControlManager * continuousControlManager;
+    DataProcessingInterface * interface;
 
     /*! \brief Implementação do ponto de entrada do modulo.
      *
@@ -67,8 +61,6 @@ private:
 
     // Submodulos deste modulo
     // SubModule1      * sm1;
-
-    boost::mutex q_mutex;
 
     // Tempo de amostragem para loop principal
     int ms_sample_time;

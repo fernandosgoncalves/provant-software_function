@@ -14,8 +14,6 @@
  */
 
 #include "DataProcessingManager.h"
-#include "ContinuousControlManager.h"
-#include "CommLowLevelManager.h"
 
 //Internal
 #include "debug.h"
@@ -27,14 +25,8 @@
 
 using namespace std;
 
-DataProcessingManager::DataProcessingManager()
-{
-	commLowLevelManager = new CommLowLevelManager();
-	continuousControlManager = new ContinuousControlManager();
-}
-
 DataProcessingManager::DataProcessingManager(std::string name) :
-    //interface(new DataProcessingInterface("DataProcessing:Interface")),
+    interface(new DataProcessingInterface("DataProcessing:Interface")),
     // sm1(new SubModule1), // talvez fosse mais interessante construir os submodulos no init
     ms_sample_time(12),
     name_(name)
@@ -124,8 +116,7 @@ void DataProcessingManager::Run()
     	auto sample_time = boost::chrono::duration_cast<boost::chrono::microseconds>(start-last_start);
     	last_start=start;
 
-    	atitude = commLowLevelManager->getAttitude();
-    	//if(interface->pop(atitude, &interface->q_atitude_in)){
+    	if(interface->pop(atitude, &interface->q_atitude_in)){
     		/*Atitude*/
     		rpy[0]=atitude.roll;
     		rpy[1]=atitude.pitch;
@@ -133,9 +124,8 @@ void DataProcessingManager::Run()
     		drpy[0]=atitude.dotRoll;
     		drpy[1]=atitude.dotPitch;
     		drpy[2]=atitude.dotYaw;
-    	//}
-    	position = commLowLevelManager->getPosition();
-    	//if(interface->pop(position, &interface->q_position_in)){
+    	}
+    	if(interface->pop(position, &interface->q_position_in)){
     		/*Position*/
     		trajectory[0]=position.x;
     		trajectory[1]=position.y;
@@ -143,17 +133,15 @@ void DataProcessingManager::Run()
     		velocity[0]=position.dotX;
     		velocity[1]=position.dotY;
     		velocity[2]=position.dotZ;
-    	//}
-    	servos = commLowLevelManager->getServos();
-    	//if(interface->pop(servos, &interface->q_servos_in)){
+    	}
+    	if(interface->pop(servos, &interface->q_servos_in)){
     		/*Servos*/
     		alpha[0]=servos.alphal;
     		alpha[1]=servos.alphar;
     		dalpha[0]=servos.dotAlphal;
     		dalpha[1]=servos.dotAlphar;
-    	//}
-    	actuation = continuousControlManager->getActuation();
-    	//if(interface->pop(actuation, &interface->q_actuation_in)){
+    	}
+    	if(interface->pop(actuation, &interface->q_actuation_in)){
     		/*Control*/
     		servoTorque[0]=-actuation.servoLeft;
     		servoTorque[1]=actuation.servoRight;
@@ -161,17 +149,15 @@ void DataProcessingManager::Run()
     		escForce[1]=actuation.escRightNewtons;
     		aux2[0]=actuation.escLeftSpeed;
     		aux2[1]=actuation.escRightSpeed;
-    	//}
-    	debug = commLowLevelManager->get_debug();
-    	//if(interface->pop(debug, &interface->q_debug_in)){
+    	}
+    	if(interface->pop(debug, &interface->q_debug_in)){
     		/*Debug*/
     		debugv[0]=debug.debug[0];
     		debugv[1]=debug.debug[1];
     		debugv[2]=debug.debug[2];
     		debugv[3]=debug.debug[3];
-    	//}
-    	rc = commLowLevelManager-> getRcNormalize();
-    	//if(interface->pop(rc, &interface->q_rc_in)){
+    	}
+    	if(interface->pop(rc, &interface->q_rc_in)){
     		/*Debug*/
     		normChannels[0]=rc.normChannels[0];
     		normChannels[1]=rc.normChannels[1];
@@ -180,7 +166,7 @@ void DataProcessingManager::Run()
     		normChannels[4]=rc.normChannels[4];
     		normChannels[5]=rc.normChannels[5];
     		normChannels[6]=rc.normChannels[6];
-    	//}
+    	}
 
     	PROVANT2.multwii_attitude(rpy[0]*RAD_TO_DEG,rpy[1]*RAD_TO_DEG,rpy[2]*RAD_TO_DEG);
     	PROVANT2.multwii2_sendControldatain(rpy,drpy,trajectory,velocity);

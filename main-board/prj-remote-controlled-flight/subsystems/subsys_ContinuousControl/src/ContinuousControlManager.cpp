@@ -14,7 +14,6 @@
  */
 
 #include "ContinuousControlManager.h"
-#include "CommLowLevelManager.h"
 #include "proVantTypes.h"
 
 //Internal
@@ -24,17 +23,14 @@
 #include <stdlib.h>
 #include <string>
 
+
+
 using namespace Eigen;
 using namespace loadmodel;
 using namespace std;
 
-ContinuousControlManager::ContinuousControlManager()
-{
-	commLowLevelManager = new CommLowLevelManager();
-}
-
 ContinuousControlManager::ContinuousControlManager(std::string name) :
-    //interface(new ContinuousControlInterface("ContinuousControl:Interface")),
+    interface(new ContinuousControlInterface("ContinuousControl:Interface")),
     // sm1(new SubModule1), // talvez fosse mais interessante construir os submodulos no init
     ms_sample_time(12),
     name_(name)
@@ -99,33 +95,19 @@ void ContinuousControlManager::Log() {
 	printf("\nLog configuration sucessfull! Using file %s.\n", file);
 }
 
-void ContinuousControlManager::setActuation(proVant::controlOutput message){
-	q_mutex.lock();
-	this->cc_actuation = message;
-	q_mutex.unlock();
-}
-
-proVant::controlOutput ContinuousControlManager::getActuation(){
-	proVant::controlOutput temp_data;
-	q_mutex.lock();
-	temp_data = this->cc_actuation;
-	q_mutex.unlock();
-	return temp_data;
-}
-
 void ContinuousControlManager::Run()
 {
     Init();
     int count = 0;
     int times[1000];
     // Algumas variaveis... 
-    proVant::controlOutput actuation;
-    proVant::rcNormalize rcNormalize;
-    proVant::servos_state servos;
-    proVant::position position;
     proVant::atitude atitude;
-    proVant::status status;
+    proVant::position position;
+    proVant::servos_state servos;
+    proVant::controlOutput actuation;
     proVant::debug debug;
+    proVant::rcNormalize rcNormalize;
+    proVant::status status;
     int i=0;
     // Matrix class
     MatrixXf xs(16,1);
@@ -144,8 +126,7 @@ void ContinuousControlManager::Run()
     	auto sample_time = boost::chrono::duration_cast<boost::chrono::microseconds>(start-last_start);
     	last_start=start;
 
-    	atitude = commLowLevelManager->getAttitude();
-    	//if(interface->pop(atitude, &interface->q_atitude_in)){
+    	if(interface->pop(atitude, &interface->q_atitude_in)){
     		/*Atitude*/
 //    		cout<<"Atitude Received C"<<endl;
 //    		cout<<"Roll= "<<atitude.roll<<endl;
@@ -154,9 +135,8 @@ void ContinuousControlManager::Run()
 //    		cout<<"dotRoll= "<<atitude.dotRoll<<endl;
 //    		cout<<"dotPitch= "<<atitude.dotPitch<<endl;
 //    		cout<<"dotYaw= "<<atitude.dotYaw<<endl;
-    	//}
-    	position = commLowLevelManager->getPosition();
-    	//if(interface->pop(position, &interface->q_position_in)){
+    	}
+    	if(interface->pop(position, &interface->q_position_in)){
     		/*Position*/
 //    		cout<<"Position Received C"<<endl;
 //    		cout<<"X= "<<position.x<<endl;
@@ -165,41 +145,37 @@ void ContinuousControlManager::Run()
 //    		cout<<"dotX= "<<position.dotX<<endl;
 //    		cout<<"dotY= "<<position.dotY<<endl;
 //    		cout<<"dotZ= "<<position.dotZ<<endl;
-    	//}
-    	servos = commLowLevelManager->getServos();
-    	//if(interface->pop(servos, &interface->q_servos_in)){
+    	}
+    	if(interface->pop(servos, &interface->q_servos_in)){
     		/*Servos*/
 //    		cout<<"Servos Received C"<<endl;
 //    		cout<<"Alphal= "<<servos.alphal<<endl;
 //    		cout<<"Alphar= "<<servos.alphar<<endl;
 //    		cout<<"dotAlphal= "<<servos.dotAlphal<<endl;
 //    		cout<<"dotAlphar= "<<servos.dotAlphar<<endl;
-    	//}
-    	debug = commLowLevelManager->get_debug();
-    	//if(interface->pop(debug, &interface->q_debug_in)){
+    	}
+    	if(interface->pop(debug, &interface->q_debug_in)){
     		/*Servos*/
     	//  cout<<"Servos Received C"<<endl;
     	//  cout<<"Alphal= "<<servos.alphal<<endl;
     	//  cout<<"Alphar= "<<servos.alphar<<endl;
     	//  cout<<"dotAlphal= "<<servos.dotAlphal<<endl;
     	//  cout<<"dotAlphar= "<<servos.dotAlphar<<endl;
-    	//}
-    	rcNormalize = commLowLevelManager->getRcNormalize();
-    	//if(interface->pop(rcNormalize, &interface->q_rc_in)){
+    	}
+    	if(interface->pop(rcNormalize, &interface->q_rc_in)){
     	   	/*Servos*/
     	//	cout<<"channel[1]"<<rcNormalize.normChannels[1]<<endl;
     	//	cout<<"Alphar= "<<servos.alphar<<endl;
     	//  cout<<"dotAlphal= "<<servos.dotAlphal<<endl;
     	//  cout<<"dotAlphar= "<<servos.dotAlphar<<endl;
-    	//}
-    	status = commLowLevelManager->get_status();
-    	//if(interface->pop(status, &interface->q_status_in)){
+    	}
+    	if(interface->pop(status, &interface->q_status_in)){
     	/*Servos*/
     	//	cout<<"channel[1]"<<rcNormalize.normChannels[1]<<endl;
     	//	cout<<"Alphar= "<<servos.alphar<<endl;
     	//  cout<<"dotAlphal= "<<servos.dotAlphal<<endl;
     	//  cout<<"dotAlphar= "<<servos.dotAlphar<<endl;
-    	//}
+    	}
     	channels.setZero();
     	channels<<rcNormalize.normChannels[0],rcNormalize.normChannels[1],rcNormalize.normChannels[2],rcNormalize.normChannels[3];
     	xs.setZero();
@@ -224,9 +200,9 @@ void ContinuousControlManager::Run()
     	actuation.escLeftSpeed=0;
     	actuation.escRightSpeed=0;
 
-    	this->setActuation(actuation);
-    	//interface->push(actuation, interface->q_actuation_out_);
-    	//interface->push(actuation, interface->q_actuation2_out_);
+
+    	interface->push(actuation, interface->q_actuation_out_);
+    	interface->push(actuation, interface->q_actuation2_out_);
 
 
     	//std::cout << "sp_thread2: " << sample_time.count()<< " microseconds." << std::endl;

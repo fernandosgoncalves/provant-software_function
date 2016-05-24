@@ -34,7 +34,6 @@ set(PROJECT_DOC_DIR	"${CMAKE_CURRENT_LIST_DIR}/doc")
 # Common directory with libs, incs and srcs
 set(PROJECT_COMMON_DIR	        "${CMAKE_CURRENT_LIST_DIR}/../../common")
 set(PROJECT_COMMON_DIR_SUBSYS	"${CMAKE_CURRENT_LIST_DIR}/../common")
-set(PROJECT_DIR_SUBSYS		"${CMAKE_CURRENT_LIST_DIR}/../")
 
 # Building the project tree
 file(MAKE_DIRECTORY ${PROJECT_CONFIG_DIR})
@@ -51,12 +50,12 @@ set(SRCS
         #${PROJECT_SOURCE_DIR}/SubModule1.cpp
         #${PROJECT_SOURCE_DIR}/SubModule2.cpp
 
-	#${PROJECT_DIR_SUBSYS}/subsys_ContinuousControl/src/ContinuousControlManager.cpp
-	${PROJECT_COMMON_DIR_SUBSYS}/Provant/src/proVantProtocol.cpp
-	${PROJECT_COMMON_DIR_SUBSYS}/BeagleInterface/src/uart.cpp	
 	${PROJECT_COMMON_DIR}/src/AbstractMessageInterface.cpp
 	${PROJECT_COMMON_DIR}/src/AbstractModuleManager.cpp
+	${PROJECT_COMMON_DIR_SUBSYS}/Provant/src/proVantProtocol.cpp
 	${PROJECT_COMMON_DIR_SUBSYS}/Provant/src/vant.cpp
+	${PROJECT_COMMON_DIR_SUBSYS}/BeagleInterface/src/uart.cpp
+	
 )
 
 
@@ -104,17 +103,15 @@ set(LIB_POSTFIX bundle)
 include_directories(
         ${PROJECT_INCLUDE_DIR}
         #${PROJECT_EXT_INCLUDE}
-	${PROJECT_DIR_SUBSYS}/subsys_ContinuousControl/inc
-	${PROJECT_DIR_SUBSYS}/subsys_CommLowLevel/inc
-	${PROJECT_COMMON_DIR_SUBSYS}/BeagleInterface/inc
-	${PROJECT_COMMON_DIR_SUBSYS}/qpOases/include
-	${PROJECT_COMMON_DIR_SUBSYS}/Controller/inc
-	${PROJECT_COMMON_DIR_SUBSYS}/Trajectory/inc			
-	${PROJECT_COMMON_DIR_SUBSYS}/Provant/inc
-	${PROJECT_COMMON_DIR_SUBSYS}/Models/inc
-	${PROJECT_COMMON_DIR_SUBSYS}
-	${PROJECT_COMMON_DIR}/inc
         ${PROJECT_CONFIG_DIR}
+	${PROJECT_COMMON_DIR}/inc
+	${PROJECT_COMMON_DIR_SUBSYS}/Provant/inc
+	${PROJECT_COMMON_DIR_SUBSYS}/BeagleInterface/inc
+	${PROJECT_COMMON_DIR_SUBSYS}/Controller/inc
+	${PROJECT_COMMON_DIR_SUBSYS}/Models/inc
+	${PROJECT_COMMON_DIR_SUBSYS}/Trajectory/inc			
+	${PROJECT_COMMON_DIR_SUBSYS}
+	${PROJECT_COMMON_DIR_SUBSYS}/qpOases/include
         ${Boost_INCLUDE_DIRS}
 )
 

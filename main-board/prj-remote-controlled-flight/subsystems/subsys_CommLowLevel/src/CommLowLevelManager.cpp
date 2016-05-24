@@ -13,7 +13,6 @@
  *
  */
 
-#include "ContinuousControlManager.h"
 #include "CommLowLevelManager.h"
 #include "proVantTypes.h"
 
@@ -27,13 +26,8 @@
 
 using namespace std;
 
-CommLowLevelManager::CommLowLevelManager()
-{
-	continuousControlManager = new ContinuousControlManager();
-}
-
 CommLowLevelManager::CommLowLevelManager(std::string name) :
-    //interface(new CommLowLevelInterface("CommLowLevel:Interface")),
+    interface(new CommLowLevelInterface("CommLowLevel:Interface")),
     // sm1(new SubModule1), // talvez fosse mais interessante construir os submodulos no init
     ms_sample_time(6),
     name_(name)
@@ -94,91 +88,8 @@ void CommLowLevelManager::Log() {
 	printf("\nLog configuration sucessfull! Using file %s.\n", file);
 }
 
-void CommLowLevelManager::setRcNormalize(proVant::rcNormalize message){
-	q_mutex.lock();
-	this->cll_rc = message;
-	q_mutex.unlock();
-}
-
-void CommLowLevelManager::setServos(proVant::servos_state message){
-	q_mutex.lock();
-	this->cll_servos = message;
-	q_mutex.unlock();
-}
-
-void CommLowLevelManager::setPosition(proVant::position message){
-	q_mutex.lock();
-	this->cll_position = message;
-	q_mutex.unlock();
-}
-
-void CommLowLevelManager::setAttitude(proVant::atitude message){
-	q_mutex.lock();
-	this->cll_atitude = message;
-	q_mutex.unlock();
-}
-
-void CommLowLevelManager::setStatus(proVant::status message){
-	q_mutex.lock();
-	this->cll_status = message;
-	q_mutex.unlock();
-}
-
-void CommLowLevelManager::setDebug(proVant::debug message){
-	q_mutex.lock();
-	this->cll_debug = message;
-	q_mutex.unlock();
-}
-
-proVant::rcNormalize CommLowLevelManager::getRcNormalize(){
-	proVant::rcNormalize temp_data;
-	q_mutex.lock();
-	temp_data = this->cll_rc;
-	q_mutex.unlock();
-	return temp_data;
-}
-
-proVant::servos_state CommLowLevelManager::getServos(){
-	proVant::servos_state temp_data;
-	q_mutex.lock();
-	temp_data = this->cll_servos;
-	q_mutex.unlock();
-	return temp_data;
-}
-
-proVant::position CommLowLevelManager::getPosition(){
-	proVant::position temp_data;
-	q_mutex.lock();
-	temp_data = this->cll_position;
-	q_mutex.unlock();
-	return temp_data;
-}
-
-proVant::atitude CommLowLevelManager::getAttitude(){
-	proVant::atitude temp_data;
-	q_mutex.lock();
-	temp_data = this->cll_atitude;
-	q_mutex.unlock();
-	return temp_data;
-}
-
-proVant::status CommLowLevelManager::get_status(){
-	proVant::status temp_data;
-	q_mutex.lock();
-	temp_data = this->cll_status;
-	q_mutex.unlock();
-	return temp_data;
-}
-
-proVant::debug CommLowLevelManager::get_debug(){
-	proVant::debug temp_data;
-	q_mutex.lock();
-	temp_data = this->cll_debug;
-	q_mutex.unlock();
-	return temp_data;
-}
-
-void CommLowLevelManager::Run(){
+void CommLowLevelManager::Run()
+{
     Init();
     int count = 0;
     int times[1000];
@@ -237,9 +148,8 @@ void CommLowLevelManager::Run(){
     	status=PROVANT.getVantData().getStatus();
 
 
-    	actuation = continuousControlManager->getActuation();
     	//Send Control to Discovery
-    	//if(interface->pop(actuation, &interface->q_actuation_in)){
+    	if(interface->pop(actuation, &interface->q_actuation_in)){
     		/*Control*/
     		data1[0]= actuation.servoLeft;
     		data1[1]= actuation.servoRight;
@@ -249,28 +159,22 @@ void CommLowLevelManager::Run(){
     		data2[1]= actuation.escRightSpeed;
     		PROVANT.multwii2_sendControldataout(data1,data3,data2);
     		PROVANT.multwii_sendstack();
-    	//}
+    	}
 
-    	this->setPosition(position);
-    	//interface->push(position, interface->q_position_out_);
-    	this->setAttitude(atitude);
-    	//interface->push(atitude, interface->q_atitude_out_);
-    	this->setServos(servos);
-    	//interface->push(servos, interface->q_servos_out_);
-    	this->setDebug(debug);
-    	//interface->push(debug, interface->q_debug_out_);
-    	this->setRcNormalize(rcNormalize);
-    	//interface->push(rcNormalize, interface->q_rc_out_);
-    	this->setStatus(status);
-    	//interface->push(status,interface->q_status_out_);
+    	interface->push(position, interface->q_position_out_);
+    	interface->push(atitude, interface->q_atitude_out_);
+    	interface->push(servos, interface->q_servos_out_);
+    	interface->push(debug, interface->q_debug_out_);
+    	interface->push(rcNormalize, interface->q_rc_out_);
+    	interface->push(status,interface->q_status_out_);
 
-    	//interface->push(position, interface->q_position2_out_);
-    	//interface->push(atitude, interface->q_atitude2_out_);
-    	//interface->push(servos, interface->q_servos2_out_);
-    	//interface->push(debug, interface->q_debug2_out_);
-    	//interface->push(rcNormalize, interface->q_rc2_out_);
-    	//interface->push(actuation2, interface->q_actuation2_out_);
-    	//interface->push(status,interface->q_status2_out_);
+    	interface->push(position, interface->q_position2_out_);
+    	interface->push(atitude, interface->q_atitude2_out_);
+    	interface->push(servos, interface->q_servos2_out_);
+    	interface->push(debug, interface->q_debug2_out_);
+    	interface->push(rcNormalize, interface->q_rc2_out_);
+    	interface->push(actuation2, interface->q_actuation2_out_);
+    	interface->push(status,interface->q_status2_out_);
 
     	//Elapsed time code
 //    	auto end = std::chrono::steady_clock::now();

@@ -45,29 +45,21 @@ int main(int argc, char ** argv) {
     ContinuousControlManager   ContinuousControl("ContinuousControl:Manager");  //AQUI
     CommLowLevelManager        CommLowLevel("CommLowLevel:Manager");  //AQUI
 
-    //Atribuir os objetos das classes aos objetos criados aqui
-    ContinuousControl.commLowLevelManager = &CommLowLevel;
+    CommLowLevel.interface->q_atitude_out_ = &ContinuousControl.interface->q_atitude_in; //Aqui
+    CommLowLevel.interface->q_position_out_ = &ContinuousControl.interface->q_position_in; //Aqui
+    CommLowLevel.interface->q_servos_out_ = &ContinuousControl.interface->q_servos_in; //Aqui
+    CommLowLevel.interface->q_debug_out_= &ContinuousControl.interface->q_debug_in; //Aqui
+    CommLowLevel.interface->q_rc_out_= &ContinuousControl.interface->q_rc_in; //Aqui
+    CommLowLevel.interface->q_status_out_= &ContinuousControl.interface->q_status_in; //Aqui
+    ContinuousControl.interface->q_actuation_out_ = &CommLowLevel.interface->q_actuation_in; //Aqui
 
-    DataProcessing.continuousControlManager = &ContinuousControl;
-    DataProcessing.commLowLevelManager = &CommLowLevel;
-
-    CommLowLevel.continuousControlManager = &ContinuousControl;
-
-    //CommLowLevel.interface->q_atitude_out_ = &ContinuousControl.interface->q_atitude_in; //Aqui
-    //CommLowLevel.interface->q_position_out_ = &ContinuousControl.interface->q_position_in; //Aqui
-    //CommLowLevel.interface->q_servos_out_ = &ContinuousControl.interface->q_servos_in; //Aqui
-    //CommLowLevel.interface->q_debug_out_= &ContinuousControl.interface->q_debug_in; //Aqui
-    //CommLowLevel.interface->q_rc_out_= &ContinuousControl.interface->q_rc_in; //Aqui
-    //CommLowLevel.interface->q_status_out_= &ContinuousControl.interface->q_status_in; //Aqui
-    //ContinuousControl.interface->q_actuation_out_ = &CommLowLevel.interface->q_actuation_in; //Aqui
-
-    //CommLowLevel.interface->q_atitude2_out_ = &DataProcessing.interface->q_atitude_in; //Aqui
-    //CommLowLevel.interface->q_position2_out_ = &DataProcessing.interface->q_position_in; //Aqui
-    //CommLowLevel.interface->q_servos2_out_ = &DataProcessing.interface->q_servos_in; //Aqui
-    //CommLowLevel.interface->q_debug2_out_= &DataProcessing.interface->q_debug_in; //Aqui
-    //CommLowLevel.interface->q_rc2_out_= &DataProcessing.interface->q_rc_in; //Aqui
-    //CommLowLevel.interface->q_actuation2_out_ = &DataProcessing.interface->q_actuation_in; //Aqui
-    //CommLowLevel.interface->q_status2_out_= &ContinuousControl.interface->q_status_in; //Aqui
+    CommLowLevel.interface->q_atitude2_out_ = &DataProcessing.interface->q_atitude_in; //Aqui
+    CommLowLevel.interface->q_position2_out_ = &DataProcessing.interface->q_position_in; //Aqui
+    CommLowLevel.interface->q_servos2_out_ = &DataProcessing.interface->q_servos_in; //Aqui
+    CommLowLevel.interface->q_debug2_out_= &DataProcessing.interface->q_debug_in; //Aqui
+    CommLowLevel.interface->q_rc2_out_= &DataProcessing.interface->q_rc_in; //Aqui
+    CommLowLevel.interface->q_actuation2_out_ = &DataProcessing.interface->q_actuation_in; //Aqui
+    CommLowLevel.interface->q_status2_out_= &ContinuousControl.interface->q_status_in; //Aqui
 
 //    boost::asio::deadline_timer periodo(io,boost::posix_time::milliseconds(12));
 //
